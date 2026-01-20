@@ -1,3 +1,9 @@
+"""
+Backoffice HTML - Interfaz web para usuarios internos.
+
+Usa sesiones de Flask para almacenar el JWT (los navegadores no pueden
+enviar headers Authorization facilmente en cada request).
+"""
 from flask import Blueprint, render_template, request, redirect, url_for, session, send_file
 from flask_jwt_extended import create_access_token, decode_token
 from app import db
@@ -14,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def login_required(f):
-    """Decorator to check if user is logged in via session JWT"""
+    """Decorador que valida JWT almacenado en sesion. Solo permite usuarios internos."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         token = session.get('jwt_token')

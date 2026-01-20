@@ -3,7 +3,13 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 
+
 class User(db.Model):
+    """
+    Usuario del sistema.
+    is_internal=True: usuario de backoffice (puede ver todas las operaciones)
+    is_internal=False: usuario publico (solo puede crear operaciones)
+    """
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -27,13 +33,18 @@ class User(db.Model):
         }
 
 class Operation(db.Model):
+    """
+    Registro de actividad con huella de carbono.
+    carbon_score se calcula automaticamente segun type y amount.
+    user_email es opcional para operaciones internas, obligatorio para publicas.
+    """
     __tablename__ = 'operations'
 
     id = db.Column(db.Integer, primary_key=True)
     operation_id = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
-    type = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(100), nullable=False)  # electricity, transportation, heating, manufacturing
     amount = db.Column(db.Float, nullable=False)
-    carbon_score = db.Column(db.Float, nullable=False)
+    carbon_score = db.Column(db.Float, nullable=False)  # Calculado por CarbonCalculatorService
     user_email = db.Column(db.String(120), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

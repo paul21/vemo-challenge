@@ -1,3 +1,9 @@
+"""
+Servicio de emails asincrono con Celery + Redis.
+
+El envio de emails no bloquea el request HTTP. Se encola en Redis
+y el worker de Celery lo procesa en background.
+"""
 import asyncio
 from celery import Celery
 from flask import current_app
@@ -7,7 +13,6 @@ import redis
 import json
 import logging
 
-# Initialize Celery
 celery = Celery('email_service')
 celery.conf.update(
     broker_url='redis://localhost:6379/0',

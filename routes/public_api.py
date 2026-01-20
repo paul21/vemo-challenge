@@ -1,3 +1,11 @@
+"""
+API Publica - Endpoints para usuarios externos.
+
+Diferencias con API interna:
+- user_email es obligatorio en operaciones
+- Se envia email de confirmacion automaticamente via Celery
+- Solo permite crear operaciones, no listarlas
+"""
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, get_jwt
 from app import db

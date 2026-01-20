@@ -1,3 +1,11 @@
+"""
+Carbon Snapshot Console - Aplicacion Flask
+
+Arquitectura:
+- Patron Application Factory para facilitar testing y configuracion
+- Blueprints separados: API interna, API publica, Backoffice HTML, Recibos PDF
+- Servicios desacoplados para calculo de carbono y envio de emails
+"""
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
@@ -9,10 +17,9 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 
-# Load environment variables
 load_dotenv()
 
-# Initialize Flask extensions
+# Extensiones inicializadas sin app (patron factory)
 db = SQLAlchemy()
 jwt = JWTManager()
 mail = Mail()
@@ -92,16 +99,16 @@ def create_app():
     migrate.init_app(app, db)
     cors.init_app(app, resources={r"/*": {"origins": "*"}})
 
-    # Register blueprints
+    # Blueprints importados dentro de create_app para evitar imports circulares
     from routes.internal_api import internal_api
     from routes.public_api import public_api
     from routes.receipts import receipts
     from routes.backoffice import backoffice
 
-    app.register_blueprint(internal_api, url_prefix='/api')
-    app.register_blueprint(public_api, url_prefix='/public')
-    app.register_blueprint(receipts)
-    app.register_blueprint(backoffice, url_prefix='/bo')
+    app.register_blueprint(internal_api, url_prefix='/api')      # API para usuarios internos (backoffice)
+    app.register_blueprint(public_api, url_prefix='/public')     # API para usuarios externos
+    app.register_blueprint(receipts)                              # Generacion de PDFs
+    app.register_blueprint(backoffice, url_prefix='/bo')         # UI HTML del backoffice
 
     app.logger.info("Vemo application created successfully")
     return app

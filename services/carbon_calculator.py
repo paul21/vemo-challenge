@@ -1,17 +1,22 @@
+"""
+Servicio de calculo de huella de carbono.
+
+Implementacion actual: formula local con factores fijos.
+Preparado para integracion con APIs externas (Climatiq, Carbon Interface).
+"""
 import os
 import requests
 from typing import Dict, Any
 import logging
 
-class CarbonCalculatorService:
-    """Service to calculate carbon scores for operations"""
 
-    # Simple carbon factors for different operation types
+class CarbonCalculatorService:
+    # Factores de carbono por tipo de operacion (kg CO2 por unidad)
     CARBON_FACTORS = {
-        'electricity': 0.5,
-        'transportation': 2.3,
-        'heating': 1.8,
-        'manufacturing': 3.2,
+        'electricity': 0.5,      # kWh
+        'transportation': 2.3,   # km
+        'heating': 1.8,          # m3 gas
+        'manufacturing': 3.2,    # unidad producida
         'default': 1.0
     }
 
