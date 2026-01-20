@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Operation {{ operation.operation_id[:8] }} - Carbon Snapshot Console{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2 style="margin-bottom: 20px;">Operation Details</h2>
+
+    <div class="detail-row">
+        <span class="detail-label">Operation ID</span>
+        <span class="detail-value"><code>{{ operation.operation_id }}</code></span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">Type</span>
+        <span class="detail-value">{{ operation.type }}</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">Amount</span>
+        <span class="detail-value">{{ "%.2f"|format(operation.amount) }}</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">Carbon Score</span>
+        <span class="detail-value">{{ "%.2f"|format(operation.carbon_score) }}</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">User Email</span>
+        <span class="detail-value">{{ operation.user_email or '-' }}</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">Created At</span>
+        <span class="detail-value">{{ operation.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('backoffice.download_pdf', operation_id=operation.operation_id) }}" class="btn btn-success">Download PDF</a>
+        <a href="{{ url_for('backoffice.operations_list') }}" class="btn" style="margin-left: 10px;">Back to List</a>
+    </div>
+</div>
+{% endblock %}

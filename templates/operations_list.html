@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Operations - Carbon Snapshot Console{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2 style="margin-bottom: 20px;">Operations</h2>
+
+    {% if operations %}
+    <table>
+        <thead>
+            <tr>
+                <th>Operation ID</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Carbon Score</th>
+                <th>User Email</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for op in operations %}
+            <tr>
+                <td><code>{{ op.operation_id[:8] }}...</code></td>
+                <td>{{ op.type }}</td>
+                <td>{{ "%.2f"|format(op.amount) }}</td>
+                <td>{{ "%.2f"|format(op.carbon_score) }}</td>
+                <td>{{ op.user_email or '-' }}</td>
+                <td>{{ op.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    <a href="{{ url_for('backoffice.operation_detail', operation_id=op.operation_id) }}" class="btn" style="padding: 5px 10px; font-size: 0.9rem;">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No operations found.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -96,14 +96,16 @@ def create_app():
     from routes.internal_api import internal_api
     from routes.public_api import public_api
     from routes.receipts import receipts
+    from routes.backoffice import backoffice
 
     app.register_blueprint(internal_api, url_prefix='/api')
     app.register_blueprint(public_api, url_prefix='/public')
     app.register_blueprint(receipts)
+    app.register_blueprint(backoffice, url_prefix='/bo')
 
     app.logger.info("Vemo application created successfully")
     return app
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
