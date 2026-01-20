@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from flask_migrate import Migrate
+from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 
@@ -14,6 +15,7 @@ db = SQLAlchemy()
 jwt = JWTManager()
 mail = Mail()
 migrate = Migrate()
+cors = CORS()
 
 def create_app():
     app = Flask(__name__)
@@ -41,6 +43,7 @@ def create_app():
     jwt.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
+    cors.init_app(app, resources={r"/*": {"origins": "*"}})
 
     # Register blueprints
     from routes.internal_api import internal_api

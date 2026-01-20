@@ -59,7 +59,7 @@ def download_receipt(operation_id):
             y_position -= 20
 
         # Footer
-        p.setFont("Helvetica-Italic", 10)
+        p.setFont("Helvetica", 10)
         p.drawString(50, 50, "Este documento fue generado automáticamente por Carbon Snapshot Console")
 
         p.showPage()
