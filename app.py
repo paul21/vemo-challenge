@@ -6,6 +6,8 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
+import logging
+from logging.handlers import RotatingFileHandler
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +18,48 @@ jwt = JWTManager()
 mail = Mail()
 migrate = Migrate()
 cors = CORS()
+
+def setup_logging(app):
+    """Configure logging for the application"""
+    log_level = os.getenv('LOG_LEVEL', 'INFO')
+    log_file = os.getenv('LOG_FILE', 'vemo.log')
+
+    # Create logs directory if it doesn't exist
+    log_dir = os.path.dirname(log_file) if os.path.dirname(log_file) else 'logs'
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    # Configure logging format
+    formatter = logging.Formatter(
+        '%(asctime)s %(levelname)s [%(name)s] %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
+    # File handler with rotation
+    file_handler = RotatingFileHandler(
+        log_file,
+        maxBytes=10240000,  # 10MB
+        backupCount=10
+    )
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(getattr(logging, log_level))
+
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    console_handler.setLevel(getattr(logging, log_level))
+
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(getattr(logging, log_level))
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
+
+    # Configure Flask app logger
+    app.logger.setLevel(getattr(logging, log_level))
+
+    # Log application startup
+    app.logger.info("Vemo application logging initialized")
 
 def create_app():
     app = Flask(__name__)
@@ -38,6 +82,9 @@ def create_app():
     app.config['CELERY_BROKER_URL'] = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
     app.config['CELERY_RESULT_BACKEND'] = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 
+    # Setup logging
+    setup_logging(app)
+
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
@@ -54,6 +101,7 @@ def create_app():
     app.register_blueprint(public_api, url_prefix='/public')
     app.register_blueprint(receipts)
 
+    app.logger.info("Vemo application created successfully")
     return app
 
 if __name__ == '__main__':

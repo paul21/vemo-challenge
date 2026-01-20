@@ -5,6 +5,7 @@ from flask_mail import Message
 from app import mail
 import redis
 import json
+import logging
 
 # Initialize Celery
 celery = Celery('email_service')
@@ -23,12 +24,16 @@ class EmailService:
 
     def __init__(self):
         self.redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+        self.logger = logging.getLogger(__name__)
 
     @staticmethod
     @celery.task
     def send_operation_confirmation_async(operation_data: dict):
         """Send confirmation email for a new operation asynchronously"""
+        logger = logging.getLogger(__name__)
         try:
+            logger.info(f"Sending confirmation email for operation: {operation_data.get('operation_id')}")
+
             subject = "Transacción recibida – Carbon Snapshot Console"
 
             body = f"""
@@ -55,16 +60,18 @@ El equipo de Carbon Snapshot Console
             )
 
             mail.send(msg)
-            print(f"Email sent to {operation_data['user_email']}")
+            logger.info(f"Email sent successfully to {operation_data['user_email']}")
             return True
 
         except Exception as e:
-            print(f"Failed to send email: {e}")
+            logger.error(f"Failed to send email to {operation_data.get('user_email', 'unknown')}: {str(e)}")
             return False
 
     async def queue_email_confirmation(self, operation_data: dict):
         """Queue email confirmation task to Redis"""
         try:
+            self.logger.info(f"Queuing email confirmation for operation: {operation_data.get('operation_id')}")
+
             # Store in Redis queue for processing
             await asyncio.get_event_loop().run_in_executor(
                 None,
@@ -77,17 +84,20 @@ El equipo de Carbon Snapshot Console
             # Trigger Celery task
             self.send_operation_confirmation_async.delay(operation_data)
 
-            print(f"Email queued for {operation_data['user_email']}")
+            self.logger.info(f"Email queued successfully for {operation_data['user_email']}")
             return True
 
         except Exception as e:
-            print(f"Failed to queue email: {e}")
+            self.logger.error(f"Failed to queue email for {operation_data.get('user_email', 'unknown')}: {str(e)}")
             return False
 
     @staticmethod
     def send_operation_confirmation(operation_data: dict):
         """Legacy sync method - queues email for async processing"""
+        logger = logging.getLogger(__name__)
         try:
+            logger.info(f"Initiating email confirmation for operation: {operation_data.get('operation_id')}")
+
             service = EmailService()
             # Run the async queue method in sync context
             loop = asyncio.new_event_loop()
@@ -96,7 +106,13 @@ El equipo de Carbon Snapshot Console
                 service.queue_email_confirmation(operation_data)
             )
             loop.close()
+
+            if result:
+                logger.info(f"Email confirmation process completed for operation: {operation_data.get('operation_id')}")
+            else:
+                logger.warning(f"Email confirmation process failed for operation: {operation_data.get('operation_id')}")
+
             return result
         except Exception as e:
-            print(f"Failed to queue email: {e}")
+            logger.error(f"Failed to queue email confirmation for operation {operation_data.get('operation_id', 'unknown')}: {str(e)}")
             return False
